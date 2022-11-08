@@ -1,8 +1,8 @@
 import sys
 
 def checkletter(word):
-    letterdic={'T0':{"a": "T1", "b": "T1", "c": "T1", "d":"T1" , "e": "T1", "f" : "T1" , "g": "T1","h": "T1","i": "T1", "j": "T1" , "k": "T1",
-            "l": "T1", "m": "T1", "n":"T1" , "o": "T1", "p":"T1" , "q" : "T1" , "r": "T1", "s": "T1" , "t": "T1",
+    letterdic={'T0':{"a": "T1", "b": "T1", "c": "T1", "d": "T1", "e": "T1", "f" : "T1" , "g": "T1","h": "T1","i": "T1", "j": "T1" , "k": "T1",
+            "l": "T1", "m": "T1", "n":"T1" , "o": "T1", "p": "T1" , "q" : "T1" , "r": "T1", "s": "T1" , "t": "T1",
             "u": "T1", "v": "T1", "w": "T1", "x": "T1" ,"y": "T1", "z": "T1",
             "A": "T1", "B": "T1", "C":"T1" , "D": "T1", "E":"T1" , "F" : "T1","G":"T1" , "H":"T1" ,
             "I": "T1", "J": "T1", "K": "T1", "L": "T1", "M": "T1", "N" : "T1", "O": "T1", "P":"T1" ,
@@ -49,8 +49,7 @@ def checkdigit(word):
     else:
         return False #digit 아님
 
-def lexical(word):
-    return 0
+
 
 
 #token_string="word"
@@ -75,25 +74,143 @@ left_paren = 14
 right_paren = 15
 token_dic={'ident': 0,'const':1,":=": 10,';' : 11,'+' : 12, '-': 12,"*" : 13, "/": 13,'(' : 14,')' : 15 }
 
-def program():
-    statements()
+num=0
+temp=0
+result=0
+
+def program_f():
+    statements_f()
+
+def statements_f():
+    global num,temp,result
+    j = num
+    statement_f()
+    idcount= [i for i in range(j,num) if next_token[i]==0]
+    constcount = [i for i in range(j, num) if next_token[i] == 1]
+    opcount = [i for i in range(j, num) if (next_token[i] == 12 or next_token[i] == 13)]
+    for i in range(j,num+1):
+        if(num==len(next_token)):
+            break
+        print(token_string[i],end='')
+    print("\nID: %d; CONST: %d; OP: %d" % (len(idcount), len(constcount),len(opcount)))
+    print("(OK)")
+
+    if(num<len(next_token) and next_token[num]==11): #semicolon 임을 확인하는 작업 맞으면 +1 해서 다음 토큰 확인하기
+        num+=1
+        statements_f()
+    elif(num-1==len(next_token)):
+        return True
+    else:
+        print(num)
+        print("ERROR")
+        return False
+
+def statement_f():
+    global num,temp,result
+    if(next_token[num]==0): #ident인지 확인하는 작업 맞으면 +=1 해서 다음 토큰 확인하기
+        result_dic[token_string[num]]=0
+        temp=0
+        result=0
+        num+=1
+        if(next_token[num]==10):
+            num+=1
+            expression_f()
+            pos = [i for i in range(num) if next_token[i] == 10]
+            indexnum = pos[-1]
+            result_dic[token_string[indexnum]]=result
+        else:
+            print(num)
+            print("ERROR")
+            return False
+    else:
+        print(num)
+        print("ERROR")
+        return False
+
+def expression_f():
+    global num, temp,result
+    term_f()
+    term_tail_f()
+
+def term_tail_f():
+    global num,temp,result
+    if(num<len(next_token) and next_token[num]==12):
+        if(next_token[num+1]==12):
+            print("(Warning)'중복연산자(%s)제거'"%token_string[num+1])
+            del token_string[num]
+            del next_token[num]
+        if (token_string[num] == '+'):
+            num += 1
+            term_f()
+            result = result + temp
+        else:
+            num += 1
+            term_f()
+            result = result - temp
+        term_tail_f()
+    else:
+        return True
+
+def term_f():
+    global num, temp,result
+    factor_f()
+    factor_tail_f()
+
+
+def factor_tail_f():
+    global num,temp,result
+    if( num<len(next_token) and next_token[num]==13):
+        if(token_string[num]=='*'):
+            num+=1
+            factor_f()
+            result = result * temp
+        else:
+            num+=1
+            factor_f()
+            result = result/temp
+        factor_tail_f()
+    else:
+        return True
+
+def factor_f():
+    global num, temp,result
+    if(next_token[num]==14):
+        num+=1
+        expression_f()
+        if(next_token[num]==15):
+            num+=1
+            return True
+        else:
+            print("ERROR")
+            print(num)
+            return False
+    else:
+        if(next_token[num]==0):
+            temp=result_dic[token_string[num]]
+            num+=1
+            return True
+        elif(next_token[num]==1):
+            temp= int(token_string[num])
+            num += 1
+            return True
+        else:
+            print("ERROR")
+            print(num)
+            return False
 
 
 
 
-
-
-
-
-
+next_token = []
+token_string = []
+result_dic={} #symboltable 역할을 한다.
+data=[]
 def main():
     #inputfile = sys.argv[1]
     #f = open(inputfile,'r')
-
-    next_token=[]
-    token_string=[]
     f = open('hello.txt', 'r')
     data = f.readlines()
+    f.close()
     print(data)
     for line in data:
         i=0
@@ -125,10 +242,10 @@ def main():
 
     print(next_token)
     print(token_string)
-    next=gettoken
-
-
-
+    #result_dic[token_string[3]]=0
+    #result_dic[token_string[3]]+=3
+    program_f()
+    print(result_dic)
 if __name__=="__main__":
     main()
 

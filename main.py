@@ -57,7 +57,7 @@ def lexical(inputs):
     symbol="T0"
     i = 0
     lexem=inputs[i]
-    print(inputs)
+
     symbol = checkdic[symbol][inputs[i]]
     others=[ ":", ';', '+', '-', "*", "/", '(', ')']
     while(i<len(inputs)):
@@ -72,7 +72,7 @@ def lexical(inputs):
                     break
                 lexem=lexem+inputs[i]
                 i+=1
-        if(symbol=="T1" or symbol=="T2"):
+        elif(symbol=="T1" or symbol=="T2"):
             if(i==len(inputs)):
                 if(symbol=="T1"):
                     next_token.append(0)
@@ -125,8 +125,9 @@ def lexical(inputs):
         elif (symbol == "T8"):
             next_token.append(15)
             token_string.append(lexem)
-            symbol = checkdic["T0"][inputs[i]]
-            lexem = inputs[i]
+            if(i!=len(inputs)):
+                symbol = checkdic["T0"][inputs[i]]
+                lexem = inputs[i]
         else:
             symbol = checkdic[symbol][inputs[i]]
             lexem = lexem+inputs[i+1]
@@ -143,7 +144,7 @@ def program_f():
     statements_f()
 
 def statements_f():
-    global num,temp,result,error,idcount, constcount, opcount,warnings,message,unknown
+    global num,temp,result,error,idcount, constcount, opcount,warnings,message,unknown,termfactorcount
     idcount,constcount,opcount,error,warnings,termfactorcount=0,0,0,0,0,0
     message=""
 
@@ -176,7 +177,7 @@ def statements_f():
         return False
 
 def statement_f():
-    global num,temp,result,error,idcount, constcount, opcount,message,termfactorcount
+    global num,temp,result,error,idcount, constcount, opcount,message,termfactorcount,oneop
     if(next_token[num]==0): #ident인지 확인하는 작업 맞으면 +=1 해서 다음 토큰 확인하기
         idcount+=1
         print("%s"%token_string[num],end='')
@@ -191,8 +192,9 @@ def statement_f():
             pos = [i for i in range(num) if next_token[i] == 10]
             indexnum = pos[-1]-1
             if(termfactorcount==2):
-                result=temp
+                result=oneop
             result_dic[token_string[indexnum]]=result
+
         else:
             error=1
             message="'문법 오류'"
@@ -204,66 +206,96 @@ def statement_f():
         return False
 
 def expression_f():
-    global num, temp,result,error,idcount, constcount, opcount
-    term_f()
-    term_tail_f()
+    global num, result,error,idcount, constcount, opcount
+    num1 = term_f()
+    return term_tail_f(num1)
 
-def term_tail_f():
-    global num,temp,result,error,idcount, constcount, opcount,warnings,message,termfactorcount
+def term_tail_f(num1):
+    global num,result,error,idcount, constcount, opcount,warnings,message,termfactorcount
     termfactorcount+=1
     if(num<len(next_token) and next_token[num]==12):
         print("%s" % token_string[num], end='')
         if(next_token[num+1]==12):
-            warnings=1
-            message="'중복연산자(+)제거'\n"
-            del token_string[num]
-            del next_token[num]
+            if(token_string[num]=='-'):
+                error=1
+                message="'(-)중복 연산자, 문법 규칙 위반'"
+            else:
+                warnings=1
+                message="'중복연산자 (+) 제거'"
+                del token_string[num]
+                del next_token[num]
         if (token_string[num] == '+'):
             num += 1
-            term_f()
-            result = result + temp
+            t=term_f()
+            if(type(num1) is not str and type(t) is not str and t!=None):
+                result = t + num1
         else:
             num += 1
-            term_f()
-            result = result - temp
+            t=term_f()
+            if (type(num1) is not str and type(t) is not str):
+                result = num1 - t
         opcount+=1
-        term_tail_f()
+        term_tail_f(result)
+    elif (num == len(token_string)):
+        return num1
+    elif(next_token[num] == 15 or next_token[num] == 11):
+        return num1
     else:
-        return True
+        error=1
+        message="'문법 오류'"
+        return False
+
 
 def term_f():
-    global num, temp,result,error,idcount, constcount, opcount
-    factor_f()
-    factor_tail_f()
+    global num, result,error,idcount, constcount, opcount
+    num1=factor_f()
+    return factor_tail_f(num1)
 
 
-def factor_tail_f():
-    global num,temp,result,error,idcount, constcount, opcount,termfactorcount
+def factor_tail_f(num1):
+    global num,result,error,idcount, constcount, opcount,termfactorcount
     termfactorcount += 1
     if( num<len(next_token) and next_token[num]==13):
         print("%s" % token_string[num], end='')
         if(token_string[num]=='*'):
             num+=1
-            factor_f()
-            result = result * temp
+            t=factor_f()
+            if (type(num1) is not str and type(t) is not str):
+                result=num1*t
         else:
             num+=1
-            factor_f()
-            result = result/temp
+            t=factor_f()
+            if (type(num1) is not str and type(t) is not str):
+                if(t!=0):
+                    result=num1/t
+                else:
+                    error = 1
+                    message = "'0으로 나누기 실행'"
+                    result='Unknown'
+                    return False
+
         opcount+=1
-        factor_tail_f()
+        factor_tail_f(result)
+        return result
+    elif (num == len(token_string)):
+        return num1
+    elif(next_token[num] == 15 or next_token[num] == 11 or next_token[num]==12):
+        return num1
     else:
-        return True
+        error=1
+        message="'문법 오류'"
+        return False
 
 def factor_f():
-    global num, temp,result,error,idcount,constcount,opcount,message,unknown
+    global num,result,error,idcount,constcount,opcount,message,unknown,oneop
     if(next_token[num]==14):
         print("%s" % token_string[num], end='')
         num+=1
-        expression_f()
+        t = expression_f()
         if(next_token[num]==15):
+            print("%s" % token_string[num], end='')
             num+=1
-            return True
+            return t
         else:
             message="'문법 오류(right_paren 없음)'"
             error = 1
@@ -272,26 +304,41 @@ def factor_f():
         print("%s" % token_string[num], end='')
         if(next_token[num]==0):
             if token_string[num] in result_dic:
-                temp=result_dic[token_string[num]]
-                if(result==0):
-                    result=temp
-                num+=1
-                idcount+=1
-                return True
+                if(result_dic[token_string[num]]=='Unknown'):
+                    error = 1
+                    message = "'정의되지 않은 변수(" + token_string[num] + ")가 참조됨'"
+                    result_dic[token_string[num]] = 'Unknown'
+                    unknown = 1
+                    num += 1
+                    return False
+                else:
+                    temp=result_dic[token_string[num]]
+                    oneop=result_dic[token_string[num]]
+
+                    num+=1
+                    idcount+=1
+                    return temp
             else:
-                error=1
-                message="'선언되지 않은 연산자("+token_string[num]+")'"
+
+                message="'정의되지 않은 변수("+token_string[num]+")가 참조됨'"
                 result_dic[token_string[num]]='Unknown'
                 unknown=1
                 num+=1
                 return False
+        elif(next_token[num]==16):
+            error = 1
+            message = "'identifier rule 위반'"
+            result_dic[token_string[num]] = 'Unknown'
+            num += 1
+            return False
         elif(next_token[num]==1):
             temp= int(token_string[num])
-            if (result == 0):
-                result = temp
+            oneop=int(token_string[num])
+            #if (result == 0):
+                #result = temp
             num += 1
             constcount+=1
-            return True
+            return temp
         else:
             message="'문법 오류'"
             error=1
@@ -311,19 +358,20 @@ def main():
     f = open('hello.txt', 'r')
     data = f.readlines()
     f.close()
-    print(data)
     for line in data:
         input_string=input_string+line.strip()
 
     input_string=input_string.replace(" ","")
     lexical(input_string)
-
     print(next_token)
     print(token_string)
-    #result_dic[token_string[3]]=0
-    #result_dic[token_string[3]]+=3
     program_f()
-    print(result_dic)
+    print("result=> ",end='')
+    for key, value in result_dic.items():
+        print("%s:"%(key),end="")
+        print(value,end='')
+        print("; ",end='')
+
 if __name__=="__main__":
     main()
 

@@ -373,11 +373,13 @@ next_token = []
 token_string = []
 result_dic={} #symboltable 역할을 한다.
 input_string=""
+
+
 def main():
     global input_string
-    #inputfile = sys.argv[1]
-    #f = open(inputfile,'r')
-    f = open('hello.txt', 'r')
+    inputfile = sys.argv[1]
+    f = open(inputfile,'r')
+    #f = open('hello.txt', 'r')
     data = f.readlines()
     f.close()
     for line in data:
@@ -385,8 +387,6 @@ def main():
 
     input_string=input_string.replace(" ","")
     lexical(input_string)
-    print(next_token)
-    print(token_string)
     program_f()
     print("result=> ",end='')
     for key, value in result_dic.items():

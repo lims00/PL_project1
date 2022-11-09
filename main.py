@@ -155,10 +155,11 @@ def statements_f():
     print("\nID: %d; CONST: %d; OP: %d" %(idcount, constcount, opcount))
     if error==1:
         print("(ERROR)%s"%message)
-        if(unknown==1):
-            pos = [i for i in range(num) if next_token[i] == 10]
-            indexnum = pos[-1] - 1
-            result_dic[token_string[indexnum]]="Unknonw"
+
+        pos = [i for i in range(num) if next_token[i] == 10]
+        indexnum = pos[-1] - 1
+        result_dic[token_string[indexnum]]="Unknown"
+
     elif warnings==1:
         print("(Warning)%s"%message)
     else:
@@ -188,7 +189,7 @@ def statement_f():
         if(next_token[num]==10):
             print("%s" % token_string[num], end='')
             num+=1
-            expression_f()
+            result = expression_f()
             pos = [i for i in range(num) if next_token[i] == 10]
             indexnum = pos[-1]-1
             if(termfactorcount==2):
@@ -227,8 +228,9 @@ def term_tail_f(num1):
         if (token_string[num] == '+'):
             num += 1
             t=term_f()
-            if(t!='Unknown'):
+            if(type(num1) is not str and type(t) is not str):
                 result = t + num1
+
         else:
             num += 1
             t=term_f()
@@ -239,19 +241,32 @@ def term_tail_f(num1):
         return result
     elif (num == len(token_string)):
         return num1
-    elif(next_token[num] == 15 or next_token[num] == 11):
+    elif(next_token[num] == 11 or (next_token[num] == 15 and (14 in next_token[:num])) or next_token[num]==12):
         return num1
     else:
         error=1
-        message="'문법 오류'"
-        return False
+        if(next_token[num] == 15 and (14 in next_token[:num])==False):
+            message="'문법 오류' left_paren없음"
+        else:
+            message = "'문법 오류'"
+        while(next_token[num]!=11):
+            print("%s" % token_string[num], end='')
+            if(next_token[num]==0):
+                idcount+=1
+            elif(next_token[num]==1):
+                constcount+=1
+            elif(next_token[num]==12 or next_token[num]==13):
+                opcount+=1
+            num+=1
+            if(num == len(next_token)):
+                break
 
+        return False
 
 def term_f():
     global num, result,error,idcount, constcount, opcount
     num1=factor_f()
     return factor_tail_f(num1)
-
 
 def factor_tail_f(num1):
     global num,result,error,idcount, constcount, opcount,termfactorcount
@@ -280,12 +295,16 @@ def factor_tail_f(num1):
         return result
     elif (num == len(token_string)):
         return num1
-    elif(next_token[num] == 15 or next_token[num] == 11 or next_token[num]==12):
+    elif( next_token[num] == 11 or (next_token[num] == 15 and (14 in next_token[:num])) or next_token[num]==12 ):
         return num1
     else:
-        error=1
-        message="'문법 오류'"
-        return False
+        error = 1
+        message = "'문법 오류'"
+        while (next_token[num-1] == 11 or num == len(next_token)):
+            print("%s" % token_string[num], end='')
+            num += 1
+        result='Unknown'
+        return result
 
 def factor_f():
     global num,result,error,idcount,constcount,opcount,message,unknown,oneop
@@ -321,12 +340,13 @@ def factor_f():
                     idcount+=1
                     return temp
             else:
-
-                message="'정의되지 않은 변수("+token_string[num]+")가 참조됨'"
-                result_dic[token_string[num]]='Unknown'
-                unknown=1
-                num+=1
-                return False
+                error = 1
+                message = "'정의되지 않은 변수(" + token_string[num] + ")가 참조됨'"
+                result_dic[token_string[num]] = 'Unknown'
+                unknown = 1
+                num += 1
+                result = 'Unknown'
+                return result
         elif(next_token[num]==16):
             error = 1
             message = "'identifier rule 위반'"

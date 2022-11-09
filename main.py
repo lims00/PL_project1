@@ -227,7 +227,7 @@ def term_tail_f(num1):
         if (token_string[num] == '+'):
             num += 1
             t=term_f()
-            if(type(num1) is not str and type(t) is not str and t!=None):
+            if(t!='Unknown'):
                 result = t + num1
         else:
             num += 1
@@ -236,6 +236,7 @@ def term_tail_f(num1):
                 result = num1 - t
         opcount+=1
         term_tail_f(result)
+        return result
     elif (num == len(token_string)):
         return num1
     elif(next_token[num] == 15 or next_token[num] == 11):
@@ -310,7 +311,8 @@ def factor_f():
                     result_dic[token_string[num]] = 'Unknown'
                     unknown = 1
                     num += 1
-                    return False
+                    result='Unknown'
+                    return result
                 else:
                     temp=result_dic[token_string[num]]
                     oneop=result_dic[token_string[num]]

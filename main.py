@@ -16,6 +16,7 @@ add_operator = 12
 mult_operator = 13
 left_paren = 14
 right_paren = 15
+wrong_id=16
 token_dic={'ident': 0,'const':1,":=": 10,';' : 11,'+' : 12, '-': 12,"*" : 13, "/": 13,'(' : 14,')' : 15, 'errorid':16 }
 
 def lexical(inputs):
@@ -57,7 +58,6 @@ def lexical(inputs):
     symbol="T0"
     i = 0
     lexem=inputs[i]
-
     symbol = checkdic[symbol][inputs[i]]
     others=[ ":", ';', '+', '-', "*", "/", '(', ')']
     while(i<len(inputs)):
@@ -377,9 +377,9 @@ input_string=""
 
 def main():
     global input_string
-    #inputfile = sys.argv[1]
-    #f = open(inputfile,'r')
-    f = open('hello.txt', 'r')
+    inputfile = sys.argv[1]
+    f = open(inputfile,'r')
+    #f = open('hello.txt', 'r')
     data = f.readlines()
     f.close()
     for line in data:
@@ -387,13 +387,15 @@ def main():
 
     input_string=input_string.replace(" ","")
     lexical(input_string)
+    print('\n',end='')
     program_f()
+
     print("result=> ",end='')
     for key, value in result_dic.items():
         print("%s:"%(key),end="")
         print(value,end='')
         print("; ",end='')
-
+    print('\n')
 if __name__=="__main__":
     main()
 

@@ -1,3 +1,2 @@
-target:=2*op1;
-op1:=3;
-op2:=6
+operand2 :=3 + *2 ;
+target := operand1 + operand2 * 3

@@ -164,8 +164,6 @@ def statements_f():
         print("(Warning)%s"%message)
     else:
         print("(OK)")
-
-
     if(num<len(next_token) and next_token[num]==11): #semicolon 임을 확인하는 작업 맞으면 +1 해서 다음 토큰 확인하기
         num+=1
         statements_f()
@@ -197,6 +195,7 @@ def statement_f():
             result_dic[token_string[indexnum]]=result
 
         else:
+
             error=1
             message="'문법 오류'"
             return False
@@ -240,9 +239,9 @@ def term_tail_f(num1):
         term_tail_f(result)
         return result
     elif (num == len(token_string)):
-        return num1
+        return num1 #앱실론일때
     elif(next_token[num] == 11 or (next_token[num] == 15 and (14 in next_token[:num])) or next_token[num]==12):
-        return num1
+        return num1 #앱실론일때
     else:
         error=1
         if(next_token[num] == 15 and (14 in next_token[:num])==False):
@@ -269,7 +268,7 @@ def term_f():
     return factor_tail_f(num1)
 
 def factor_tail_f(num1):
-    global num,result,error,idcount, constcount, opcount,termfactorcount
+    global num,result,error,idcount, constcount, opcount,termfactorcount,message
     termfactorcount += 1
     if( num<len(next_token) and next_token[num]==13):
         print("%s" % token_string[num], end='')
@@ -310,7 +309,6 @@ def factor_f():
     global num,result,error,idcount,constcount,opcount,message,unknown,oneop
     if(next_token[num]==14):
         print("%s" % token_string[num], end='')
-        num+=1
         t = expression_f()
         if(next_token[num]==15):
             print("%s" % token_string[num], end='')
@@ -322,6 +320,7 @@ def factor_f():
             return False
     else:
         print("%s" % token_string[num], end='')
+
         if(next_token[num]==0):
             if token_string[num] in result_dic:
                 if(result_dic[token_string[num]]=='Unknown'):
@@ -356,12 +355,13 @@ def factor_f():
         elif(next_token[num]==1):
             temp= int(token_string[num])
             oneop=int(token_string[num])
-            #if (result == 0):
-                #result = temp
             num += 1
             constcount+=1
             return temp
         else:
+            if(next_token[num]==13):
+                opcount+=1
+            num+=1
             message="'문법 오류'"
             error=1
             return False
@@ -377,9 +377,9 @@ input_string=""
 
 def main():
     global input_string
-    inputfile = sys.argv[1]
-    f = open(inputfile,'r')
-    #f = open('hello.txt', 'r')
+    #inputfile = sys.argv[1]
+    #f = open(inputfile,'r')
+    f = open('hello.txt', 'r')
     data = f.readlines()
     f.close()
     for line in data:

@@ -377,9 +377,9 @@ input_string=""
 
 def main():
     global input_string
-    inputfile = sys.argv[1]
-    f = open(inputfile,'r')
-    #f = open('hello.txt', 'r')
+    #inputfile = sys.argv[1]
+    #f = open(inputfile,'r')
+    f = open('hello.txt', 'r')
     data = f.readlines()
     f.close()
     for line in data:
@@ -396,6 +396,9 @@ def main():
         print(value,end='')
         print("; ",end='')
     print('\n')
+    print(next_token)
+    print(result_dic)
+    print(token_string)
 if __name__=="__main__":
     main()
 
